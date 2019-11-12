@@ -6,13 +6,14 @@ import api from '../../services/api';
 
 import Container from '../../components/Container';
 
-import { Form, SubmitButton, List } from './styles';
+import { Form, SubmitButton, List, RepositoryInput } from './styles';
 
 export default class Main extends Component {
   state = {
     newRepo: '',
     repositories: [],
     loading: false,
+    error: false,
   };
 
   componentDidMount() {
@@ -38,25 +39,38 @@ export default class Main extends Component {
   handleSubmit = async e => {
     e.preventDefault();
 
-    this.setState({ loading: true });
+    try {
+      this.setState({ loading: true });
 
-    const { newRepo, repositories } = this.state;
+      const { newRepo, repositories } = this.state;
 
-    const response = await api.get(`/repos/${newRepo}`);
+      const checkRepo = repositories.find(repo => {
+        return repo.name === newRepo ? repo : null;
+      });
 
-    const data = {
-      name: response.data.full_name,
-    };
+      if (checkRepo) {
+        throw new Error('Repósitorio duplicado');
+      }
 
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: '',
-      loading: false,
-    });
+      const response = await api.get(`/repos/${newRepo}`);
+
+      const data = {
+        name: response.data.full_name,
+      };
+
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+        loading: false,
+        error: false,
+      });
+    } catch (error) {
+      this.setState({ loading: false, error: true });
+    }
   };
 
   render() {
-    const { newRepo, loading, repositories } = this.state;
+    const { newRepo, loading, repositories, error } = this.state;
 
     return (
       <Container>
@@ -66,12 +80,13 @@ export default class Main extends Component {
         </h1>
 
         <Form onSubmit={this.handleSubmit}>
-          <input
-            type="text"
+          <RepositoryInput
             placeholder="Adicionar repositório"
             value={newRepo}
             onChange={this.handleInputChange}
+            error={error}
           />
+
           <SubmitButton loading={loading}>
             {loading ? (
               <FaSpinner color="#FFF" size={14} />

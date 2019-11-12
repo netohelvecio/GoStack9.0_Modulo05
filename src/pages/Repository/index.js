@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
 
-import { Loading, Owner, IssueList } from './styles';
+import { Loading, Owner, IssueList, SelectFilter, Pagination } from './styles';
 
 import Container from '../../components/Container';
 
@@ -20,10 +20,31 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    states: [
+      { write: 'Abertas', value: 'open' },
+      { write: 'Fechadas', value: 'closed' },
+      { write: 'Todas', value: 'all' },
+    ],
+    filter: 'open',
+    page: 1,
   };
 
-  async componentDidMount() {
+  componentDidMount() {
+    this.loadIssues();
+  }
+
+  handleSelect = async e => {
+    const stateValue = e.target.value;
+
+    await this.setState({ filter: stateValue });
+
+    this.loadIssues();
+  };
+
+  async loadIssues() {
     const { match } = this.props;
+
+    const { filter, page } = this.state;
 
     const repoName = decodeURIComponent(match.params.repository);
 
@@ -31,8 +52,9 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: 'open',
+          state: filter,
           per_page: 5,
+          page,
         },
       }),
     ]);
@@ -44,8 +66,16 @@ export default class Repository extends Component {
     });
   }
 
+  async handlePage(action) {
+    const { page } = this.state;
+    await this.setState({
+      page: action === 'back' ? page - 1 : page + 1,
+    });
+    this.loadIssues();
+  }
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, states, page } = this.state;
 
     if (loading) {
       return <Loading>Carregando...</Loading>;
@@ -59,6 +89,17 @@ export default class Repository extends Component {
           <h1> {repository.name} </h1>
           <p> {repository.description} </p>
         </Owner>
+
+        <SelectFilter>
+          <p>Estado da issue: </p>
+          <select onChange={this.handleSelect}>
+            {states.map(state => (
+              <option key={state.value} value={state.value}>
+                {state.write}
+              </option>
+            ))}
+          </select>
+        </SelectFilter>
 
         <IssueList>
           {issues.map(issue => (
@@ -77,6 +118,22 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssueList>
+
+        <Pagination>
+          <button
+            type="button"
+            disabled={page < 2}
+            onClick={() => this.handlePage('back')}
+          >
+            Anterior
+          </button>
+
+          <span>Página {page} </span>
+
+          <button type="button" onClick={() => this.handlePage('next')}>
+            Próximo
+          </button>
+        </Pagination>
       </Container>
     );
   }

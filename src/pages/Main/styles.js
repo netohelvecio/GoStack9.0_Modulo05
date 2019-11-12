@@ -4,14 +4,6 @@ export const Form = styled.form`
   margin-top: 30px;
   display: flex;
   flex-direction: row;
-
-  input {
-    flex: 1;
-    border: 1px solid #eee;
-    padding: 10px 15px;
-    border-radius: 4px;
-    font-size: 16px;
-  }
 `;
 
 const rotate = keyframes`
@@ -73,8 +65,31 @@ export const List = styled.ul`
 
     a {
       color: #7159c1;
+      text-decoration: none;
     }
 
     text-decoration: none;
   }
+`;
+
+export const RepositoryInput = styled.input.attrs({
+  type: 'text',
+})`
+  flex: 1;
+  border: 1px solid #eee;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 16px;
+
+  ${props =>
+    props.error &&
+    css`
+      border: 1px solid #ff0a00;
+    `};
+
+  ${props =>
+    props.error === false &&
+    css`
+      border: 1px solid #eee;
+    `};
 `;
