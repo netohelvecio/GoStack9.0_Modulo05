@@ -9,6 +9,7 @@ import Container from '../../components/Container';
 import { Form, SubmitButton, List, RepositoryInput } from './styles';
 
 export default class Main extends Component {
+  // estado do component
   state = {
     newRepo: '',
     repositories: [],
@@ -16,6 +17,7 @@ export default class Main extends Component {
     error: false,
   };
 
+  // carrega repositorios do localstorage
   componentDidMount() {
     const repositories = localStorage.getItem('repositories');
 
@@ -24,6 +26,7 @@ export default class Main extends Component {
     }
   }
 
+  // adiciona repositorio ao localstorage
   componentDidUpdate(_, prevState) {
     const { repositories } = this.state;
 
@@ -32,10 +35,12 @@ export default class Main extends Component {
     }
   }
 
+  // adiciona novo repositorio ao state
   handleInputChange = e => {
     this.setState({ newRepo: e.target.value });
   };
 
+  // faz busca do repositorio na api
   handleSubmit = async e => {
     e.preventDefault();
 
@@ -44,6 +49,7 @@ export default class Main extends Component {
 
       const { newRepo, repositories } = this.state;
 
+      // checka se repositorio já foia adicionado
       const checkRepo = repositories.find(repo => {
         return repo.name === newRepo ? repo : null;
       });
@@ -52,12 +58,14 @@ export default class Main extends Component {
         throw new Error('Repósitorio duplicado');
       }
 
+      // busca repositorio na api
       const response = await api.get(`/repos/${newRepo}`);
 
       const data = {
         name: response.data.full_name,
       };
 
+      // adiciona repositorio ao state
       this.setState({
         repositories: [...repositories, data],
         newRepo: '',

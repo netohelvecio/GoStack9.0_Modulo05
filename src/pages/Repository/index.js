@@ -16,6 +16,7 @@ export default class Repository extends Component {
     }).isRequired,
   };
 
+  // estado do component
   state = {
     repository: {},
     issues: [],
@@ -33,6 +34,7 @@ export default class Repository extends Component {
     this.loadIssues();
   }
 
+  // altera estado do state de acordo com filtro
   handleSelect = async e => {
     const stateValue = e.target.value;
 
@@ -41,6 +43,7 @@ export default class Repository extends Component {
     this.loadIssues();
   };
 
+  // carrega issues do repositorio
   async loadIssues() {
     const { match } = this.props;
 
@@ -66,6 +69,7 @@ export default class Repository extends Component {
     });
   }
 
+  // faz paginação das issues
   async handlePage(action) {
     const { page } = this.state;
     await this.setState({
